@@ -2,7 +2,7 @@ const { createServer } = require("node:http");
 const { readFile } = require("node:fs");
 const { join, extname } = require("node:path");
 
-const hostname = "127.0.0.1";
+const hostname = "0.0.0.0";
 const port = 3000;
 
 const frontendDir = join(__dirname, "../frontend");
