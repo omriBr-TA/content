@@ -1,12 +1,15 @@
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 
-const con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "avi19091994",
-});
+try {
+  const pool = mysql.createPool({
+    host: "localhost",
+    user: "root",
+    password: "avi19091994",
+    database: "koali_content",
+  });
 
-con.connect(function (err) {
-  if (err) throw err;
-  console.log("connected to db");
-});
+  const [results, fields] = con.execute("SELECT * FROM `content_provider`;");
+  console.log(results, fields);
+} catch (err) {
+  console.log(err);
+}
