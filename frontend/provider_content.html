@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Provider Activities</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Provider Activities</h1>
+  <ul id="activitiesList"></ul>
+
+  <!-- Plus button to add a new activity -->
+  <button id="addActivityButton">+ Add Activity</button>
+
+  <script>
+    // Function to get the query parameter from the URL
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param); 
+    }
+
+    const apiBaseURL = window.location.origin;
+    // Get the provider ID from the URL
+    const providerId = getQueryParam('id');
+
+    if (providerId) {
+      // Fetch the provider's activities using the provider ID
+      fetch(`${apiBaseURL}/api/getProviderActivities?id=${providerId}`)
+        .then(response => response.json())
+        .then(data => {
+          const activitiesList = document.getElementById('activitiesList');
+          if (data.length === 0) {
+            activitiesList.innerHTML = '<li>No activities found for this provider.</li>';
+          } else {
+            data.forEach(activity => {
+              const listItem = document.createElement('li');
+              listItem.innerHTML = `<strong>${activity.title}</strong> - <a href="${activity.url}">${activity.url}</a> (${activity.language})`;
+              activitiesList.appendChild(listItem);
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching activities:', error);
+        });
+    } else {
+      document.body.innerHTML = '<p>Invalid provider ID.</p>';
+    }
+
+    // Handle click on "Add Activity" button
+    document.getElementById('addActivityButton').addEventListener('click', function () {
+      if (providerId) {
+        // Redirect to create_activity.html with providerId as a query parameter
+        window.location.href = `create_activity.html?id=${providerId}`;
+      } else {
+        alert('Invalid provider ID.');
+      }
+    });
+  </script>
+</body>
+</html>

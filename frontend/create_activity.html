@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create New Activity</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+    }
+
+    label, input {
+      margin-bottom: 10px;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .error {
+      color: red;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <form id="activityForm">
+    <h1>Create New Activity</h1>
+
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="url">URL</label>
+    <input type="url" id="url" name="url" required>
+
+    <label for="language">Language</label>
+    <input type="text" id="language" name="language" required>
+
+    <button type="submit">Create Activity</button>
+
+    <p id="responseMessage"></p>
+  </form>
+
+  <script>
+    // Function to get the provider ID from the URL
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    
+
+    document.getElementById('activityForm').addEventListener('submit', async function(event) {
+      event.preventDefault(); // Prevent the form from refreshing the page
+
+      // Get form values
+      const title = document.getElementById('title').value;
+      const url = document.getElementById('url').value;
+      const language = document.getElementById('language').value;
+
+      // Basic validation
+      if (!title || !url || !language) {
+        document.getElementById('responseMessage').textContent = 'Please fill out all fields.';
+        document.getElementById('responseMessage').style.color = 'red';
+        return;
+      }
+      const providerId = getQueryParam('id');
+
+      if (!providerId) {
+        document.body.innerHTML = '<p>Invalid provider ID.</p>';
+        return;
+      }
+
+      // Prepare the data for the SQL insert request
+      const data = {
+        title,
+        url,
+        language,
+        providerId
+      };
+
+      const apiBaseURL = window.location.origin;
+
+      try {
+        // Send the data to your backend using POST
+        const response = await fetch(`${apiBaseURL}/api/createActivity`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        // Handle the response
+        if (response.ok) {
+          document.getElementById('responseMessage').textContent = 'Activity created successfully!';
+          document.getElementById('responseMessage').style.color = 'green';
+
+          // Redirect to provider_content.html with the provider ID as a query parameter
+          window.location.href = `provider_content.html?id=${providerId}`;
+        } else {
+          document.getElementById('responseMessage').textContent = 'Error: ' + result.message;
+          document.getElementById('responseMessage').style.color = 'red';
+        }
+      } catch (error) {
+        document.getElementById('responseMessage').textContent = 'An error occurred: ' + error.message;
+        document.getElementById('responseMessage').style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>

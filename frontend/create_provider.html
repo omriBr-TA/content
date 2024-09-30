@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create New Provider</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+    }
+
+    label, input {
+      margin-bottom: 10px;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .error {
+      color: red;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <form id="providerForm">
+    <h1>Create New Provider</h1>
+
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="websiteURL">Website URL</label>
+    <input type="url" id="websiteURL" name="websiteURL" required>
+
+    <label for="contactInfo">Contact Info</label>
+    <input type="text" id="contactInfo" name="contactInfo" required>
+
+    <button type="submit">Create Provider</button>
+
+    <p id="responseMessage"></p>
+  </form>
+
+  <script>
+    document.getElementById('providerForm').addEventListener('submit', async function(event) {
+      event.preventDefault(); // Prevent the form from refreshing the page
+  
+      // Get form values
+      const name = document.getElementById('name').value;
+      const websiteURL = document.getElementById('websiteURL').value;
+      const contactInfo = document.getElementById('contactInfo').value;
+  
+      // Basic validation
+      if (!name || !websiteURL || !contactInfo) {
+        document.getElementById('responseMessage').textContent = 'Please fill out all fields.';
+        document.getElementById('responseMessage').style.color = 'red';
+        return;
+      }
+  
+      // Prepare the data for the SQL insert request
+      const data = {
+        name,
+        websiteURL,
+        contactInfo
+      };
+
+      const apiBaseURL = window.location.origin;
+  
+      try {
+        // Send the data to your backend using POST
+        const response = await fetch(`${apiBaseURL}/api/createProvider`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+  
+        const result = await response.json();
+  
+        // Handle the response
+        if (response.ok) {
+          document.getElementById('responseMessage').textContent = 'Provider created successfully!';
+          document.getElementById('responseMessage').style.color = 'green';
+  
+          // Redirect to provider_content.html with the provider ID as a query parameter
+          window.location.href = `provider_content.html?id=${result.id}`;
+        } else {
+          document.getElementById('responseMessage').textContent = 'Error: ' + result.message;
+          document.getElementById('responseMessage').style.color = 'red';
+        }
+      } catch (error) {
+        document.getElementById('responseMessage').textContent = 'An error occurred: ' + error.message;
+        document.getElementById('responseMessage').style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>

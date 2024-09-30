@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Providers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    #providerList {
+      width: 400px;
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      padding: 10px;
+    }
+
+    .provider-item {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background-color: #f9f9f9;
+    }
+
+    .provider-item:hover {
+      background-color: #f1f1f1;
+    }
+
+    .provider-info {
+      margin-bottom: 5px;
+    }
+
+    .provider-info strong {
+      font-size: 18px;
+    }
+
+    .provider-info a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .provider-info a:hover {
+      text-decoration: underline;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    #createProviderButton {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Content Providers</h1>
+
+  <ul id="providerList"></ul>
+
+  <button id="createProviderButton">Create New Provider</button>
+
+  <script>
+     const apiBaseURL = window.location.origin;
+    // Fetch the list of content providers
+    fetch(`${apiBaseURL}/api/getAllProviders`)
+      .then(response => response.json())
+      .then(data => {
+        const providerList = document.getElementById('providerList');
+        if (data.length === 0) {
+          providerList.innerHTML = '<li>No providers found.</li>';
+        } else {
+          data.forEach(provider => {
+            const listItem = document.createElement('li');
+            listItem.className = 'provider-item';
+            listItem.innerHTML = `
+              <div class="provider-info"><strong>${provider.name}</strong></div>
+              <div class="provider-info">Contact Info: ${provider.contactInfo}</div>
+              <div class="provider-info">Website: <a href="${provider.websiteURL}" target="_blank">${provider.websiteURL}</a></div>
+            `;
+            
+            // Make each provider clickable, redirect to provider_content.html with provider ID
+            listItem.addEventListener('click', () => {
+              window.location.href = `provider_content.html?id=${provider.id}`;
+            });
+
+            providerList.appendChild(listItem);
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching providers:', error);
+      });
+
+    // Redirect to create_provider page when the plus button is clicked
+    document.getElementById('createProviderButton').addEventListener('click', function() {
+      window.location.href = 'create_provider.html';
+    });
+  </script>
+</body>
+</html>
