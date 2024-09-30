@@ -60,8 +60,8 @@ const url = require('node:url');
 const { parse } = require('querystring');
 require('dotenv').config();
 
-const hostname = "16.170.218.96";
-const port = 80;
+const hostname = "0.0.0.0";
+const port = 3000;
 
 const frontendDir = join(__dirname, "../frontend");
 const anotherFrontendDir = join(__dirname, "../frontend"); // Directory for another website
@@ -222,6 +222,6 @@ const server = createServer(async (req, res) => {
 
 });
 
-server.listen(port, () => {
+server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
