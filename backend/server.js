@@ -61,7 +61,7 @@ const { parse } = require('querystring');
 require('dotenv').config();
 
 const hostname = "0.0.0.0";
-const port = 3000;
+const port = 80;
 
 const frontendDir = join(__dirname, "../frontend");
 const anotherFrontendDir = join(__dirname, "../frontend"); // Directory for another website
