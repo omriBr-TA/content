@@ -118,7 +118,7 @@ const server = createServer(async (req, res) => {
 
         try {
           // Insert into the database
-          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`,`ContentProviderID, templateID`) VALUES (?, ?, ?,?,?)";
+          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`,`ContentProviderID`, `templateID`) VALUES (?, ?, ?,?,?)";
           const [result] = await pool.query(query, [title, url, language, providerId,templateId]);
 
           // Get the inserted provider ID
