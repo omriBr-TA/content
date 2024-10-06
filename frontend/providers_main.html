@@ -156,10 +156,10 @@
       const contentDisplay = document.getElementById('contentDisplay');
       contentDisplay.innerHTML = ''; // Clear existing content
 
-      if (activity.templateId === 1) {
+      if (activity.templateID === 1) {
         // Redirect to the URL if template ID is 1
         window.location.href = activity.url;
-      } else if (activity.templateId === 2) {
+      } else if (activity.templateID === 2) {
         // Display the URL in an iframe if template ID is 2
         const iframe = document.createElement('iframe');
         iframe.src = activity.url;
