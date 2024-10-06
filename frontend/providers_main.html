@@ -3,57 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Content Providers</title>
+  <title>Content Management</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       margin: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    #providerSection {
+      width: 30%;
+      border-right: 1px solid #ccc;
       padding: 20px;
+      overflow-y: auto;
+    }
+
+    #activitySection {
+      width: 35%;
+      border-right: 1px solid #ccc;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    #contentSection {
+      width: 35%;
+      padding: 20px;
+      overflow-y: auto;
     }
 
     h1 {
-      text-align: center;
+      margin-top: 0;
     }
 
-    #providerList {
-      width: 400px;
-      max-height: 500px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
-      padding: 10px;
+    ul {
+      list-style-type: none;
+      padding: 0;
     }
 
-    .provider-item {
-      border: 1px solid #ddd;
-      padding: 10px;
+    li {
       margin-bottom: 10px;
-      cursor: pointer;
-      background-color: #f9f9f9;
-    }
-
-    .provider-item:hover {
-      background-color: #f1f1f1;
-    }
-
-    .provider-info {
-      margin-bottom: 5px;
-    }
-
-    .provider-info strong {
-      font-size: 18px;
-    }
-
-    .provider-info a {
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    .provider-info a:hover {
-      text-decoration: underline;
     }
 
     button {
@@ -69,51 +58,119 @@
       background-color: #218838;
     }
 
-    #createProviderButton {
-      margin-top: 20px;
+    .provider-item, .activity-item {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background-color: #f9f9f9;
+    }
+
+    .provider-item:hover, .activity-item:hover {
+      background-color: #f1f1f1;
+    }
+
+    iframe {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-  <h1>Content Providers</h1>
+  <!-- Providers Section -->
+  <div id="providerSection">
+    <h1>Content Providers</h1>
+    <ul id="providerList"></ul>
+    <button id="createProviderButton">Create New Provider</button>
+  </div>
 
-  <ul id="providerList"></ul>
+  <!-- Activities Section -->
+  <div id="activitySection">
+    <h1>Provider Activities</h1>
+    <ul id="activitiesList"></ul>
+    <button id="addActivityButton" style="display: none;">+ Add Activity</button>
+  </div>
 
-  <button id="createProviderButton">Create New Provider</button>
+  <!-- Content Section -->
+  <div id="contentSection">
+    <h1>Content Display</h1>
+    <div id="contentDisplay"></div>
+  </div>
 
   <script>
-     const apiBaseURL = window.location.origin;
-    // Fetch the list of content providers
-    fetch(`${apiBaseURL}/api/getAllProviders`)
-      .then(response => response.json())
-      .then(data => {
-        const providerList = document.getElementById('providerList');
-        if (data.length === 0) {
-          providerList.innerHTML = '<li>No providers found.</li>';
-        } else {
+    const apiBaseURL = window.location.origin;
+
+    // Fetch and display the list of providers
+    function loadProviders() {
+      fetch(`${apiBaseURL}/api/getAllProviders`)
+        .then(response => response.json())
+        .then(data => {
+          const providerList = document.getElementById('providerList');
+          providerList.innerHTML = ''; // Clear existing providers
           data.forEach(provider => {
             const listItem = document.createElement('li');
             listItem.className = 'provider-item';
             listItem.innerHTML = `
-              <div class="provider-info"><strong>${provider.name}</strong></div>
-              <div class="provider-info">Contact Info: ${provider.contactInfo}</div>
-              <div class="provider-info">Website: <a href="${provider.websiteURL}" target="_blank">${provider.websiteURL}</a></div>
+              <strong>${provider.name}</strong><br>
+              Contact: ${provider.contactInfo}<br>
+              Website: <a href="${provider.websiteURL}" target="_blank">${provider.websiteURL}</a>
             `;
-            
-            // Make each provider clickable, redirect to provider_content.html with provider ID
-            listItem.addEventListener('click', () => {
-              window.location.href = `provider_content.html?id=${provider.id}`;
-            });
-
+            listItem.addEventListener('click', () => loadProviderActivities(provider.id));
             providerList.appendChild(listItem);
           });
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching providers:', error);
-      });
+        })
+        .catch(error => console.error('Error fetching providers:', error));
+    }
 
-    // Redirect to create_provider page when the plus button is clicked
+    // Fetch and display the activities of a provider
+    function loadProviderActivities(providerId) {
+      fetch(`${apiBaseURL}/api/getProviderActivities?id=${providerId}`)
+        .then(response => response.json())
+        .then(data => {
+          const activitiesList = document.getElementById('activitiesList');
+          activitiesList.innerHTML = ''; // Clear existing activities
+          const addActivityButton = document.getElementById('addActivityButton');
+          addActivityButton.style.display = 'block'; // Show "Add Activity" button
+          addActivityButton.onclick = () => {
+            window.location.href = `create_activity.html?id=${providerId}`;
+          };
+
+          if (data.length === 0) {
+            activitiesList.innerHTML = '<li>No activities found for this provider.</li>';
+          } else {
+            data.forEach(activity => {
+              const listItem = document.createElement('li');
+              listItem.className = 'activity-item';
+              listItem.innerHTML = `<strong>${activity.title}</strong> (${activity.language})`;
+              listItem.addEventListener('click', () => loadActivityContent(activity));
+              activitiesList.appendChild(listItem);
+            });
+          }
+        })
+        .catch(error => console.error('Error fetching activities:', error));
+    }
+
+    // Display content based on the template ID
+    function loadActivityContent(activity) {
+      const contentDisplay = document.getElementById('contentDisplay');
+      contentDisplay.innerHTML = ''; // Clear existing content
+
+      if (activity.templateId === 1) {
+        // Redirect to the URL if template ID is 1
+        window.location.href = activity.url;
+      } else if (activity.templateId === 2) {
+        // Display the URL in an iframe if template ID is 2
+        const iframe = document.createElement('iframe');
+        iframe.src = activity.url;
+        contentDisplay.appendChild(iframe);
+      }
+    }
+
+    // Load providers on page load
+    loadProviders();
+
+    // Redirect to create provider page
     document.getElementById('createProviderButton').addEventListener('click', function() {
       window.location.href = 'create_provider.html';
     });
