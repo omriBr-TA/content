@@ -106,6 +106,7 @@ const server = createServer(async (req, res) => {
         }
       });
     }
+    
     else if (req.url === '/api/createActivity') {
       // Parse the JSON body
       let body = '';
@@ -113,12 +114,12 @@ const server = createServer(async (req, res) => {
         body += chunk.toString();
       });
       req.on('end', async () => {
-        const { title, url, language,providerId } = JSON.parse(body);
+        const { title, url, language,providerId, templateId } = JSON.parse(body);
 
         try {
           // Insert into the database
-          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`,`ContentProviderID`) VALUES (?, ?, ?,?)";
-          const [result] = await pool.query(query, [title, url, language, providerId]);
+          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`,`ContentProviderID, templateID`) VALUES (?, ?, ?,?,?)";
+          const [result] = await pool.query(query, [title, url, language, providerId,templateId]);
 
           // Get the inserted provider ID
           //const newProviderId = result.insertId;
@@ -126,7 +127,7 @@ const server = createServer(async (req, res) => {
           // Respond with success and the newly created provider's ID
           res.statusCode = 201;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ message: 'Provider created successfully!'}));
+          res.end(JSON.stringify({ message: 'Activity created successfully!'}));
         } catch (error) {
           console.error('Database Error:', error);
           res.statusCode = 500;
@@ -173,6 +174,14 @@ const server = createServer(async (req, res) => {
 
     else if (req.url === '/api/getAllProviders' ) {
       const query = "SELECT `id`, `Name` AS `name`, `WebsiteURL` AS `websiteURL`, `ContactInfo` AS `contactInfo` FROM `content_provider`";
+      const [rows] = await pool.query(query);
+    
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(rows));
+    }
+    else if (req.url === '/api/getTemplates' ) {
+      const query = "SELECT `id`, `name` FROM `template`";
       const [rows] = await pool.query(query);
     
       res.statusCode = 200;

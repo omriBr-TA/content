@@ -3,89 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Provider Activities</title>
+  <title>Create New Activity</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
 
-    h1 {
-      margin-bottom: 20px;
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
     }
 
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    li {
+    label, input, select {
       margin-bottom: 10px;
     }
 
+    input, select {
+      padding: 8px;
+      font-size: 16px;
+    }
+
     button {
-      margin-top: 20px;
-      padding: 10px 20px;
+      padding: 10px;
       font-size: 18px;
-      background-color: #007bff;
+      background-color: #28a745;
       color: white;
       border: none;
       cursor: pointer;
     }
 
     button:hover {
-      background-color: #0056b3;
+      background-color: #218838;
+    }
+
+    .error {
+      color: red;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Provider Activities</h1>
-  <ul id="activitiesList"></ul>
+  <form id="activityForm">
+    <h1>Create New Activity</h1>
 
-  <!-- Plus button to add a new activity -->
-  <button id="addActivityButton">+ Add Activity</button>
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="url">URL</label>
+    <input type="url" id="url" name="url" required>
+
+    <label for="language">Language</label>
+    <input type="text" id="language" name="language" required>
+
+    <label for="template">Select Template</label>
+    <select id="template" name="template" required>
+      <!-- Template options will be populated here dynamically -->
+    </select>
+
+    <button type="submit">Create Activity</button>
+
+    <p id="responseMessage"></p>
+  </form>
 
   <script>
-    // Function to get the query parameter from the URL
+    // Function to get the provider ID from the URL
     function getQueryParam(param) {
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param); 
+      return urlParams.get(param);
     }
 
-    const apiBaseURL = window.location.origin;
-    // Get the provider ID from the URL
     const providerId = getQueryParam('id');
+    const apiBaseURL = window.location.origin;
 
-    if (providerId) {
-      // Fetch the provider's activities using the provider ID
-      fetch(`${apiBaseURL}/api/getProviderActivities?id=${providerId}`)
-        .then(response => response.json())
-        .then(data => {
-          const activitiesList = document.getElementById('activitiesList');
-          if (data.length === 0) {
-            activitiesList.innerHTML = '<li>No activities found for this provider.</li>';
-          } else {
-            data.forEach(activity => {
-              const listItem = document.createElement('li');
-              listItem.innerHTML = `<strong>${activity.title}</strong> - <a href="${activity.url}">${activity.url}</a> (${activity.language})`;
-              activitiesList.appendChild(listItem);
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching activities:', error);
-        });
-    } else {
+    // Redirect if provider ID is missing
+    if (!providerId) {
       document.body.innerHTML = '<p>Invalid provider ID.</p>';
+      return;
     }
 
-    // Handle click on "Add Activity" button
-    document.getElementById('addActivityButton').addEventListener('click', function () {
-      if (providerId) {
-        // Redirect to create_activity.html with providerId as a query parameter
-        window.location.href = `create_activity.html?id=${providerId}`;
-      } else {
-        alert('Invalid provider ID.');
+    // Fetch templates from the backend and populate the dropdown
+    fetch(`${apiBaseURL}/api/getTemplates`)
+      .then(response => response.json())
+      .then(templates => {
+        const templateDropdown = document.getElementById('template');
+        templates.forEach(template => {
+          const option = document.createElement('option');
+          option.value = template.id;
+          option.textContent = template.name;
+          templateDropdown.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching templates:', error);
+      });
+
+    // Handle form submission
+    document.getElementById('activityForm').addEventListener('submit', async function(event) {
+      event.preventDefault(); // Prevent the form from refreshing the page
+
+      // Get form values
+      const title = document.getElementById('title').value;
+      const url = document.getElementById('url').value;
+      const language = document.getElementById('language').value;
+      const templateId = document.getElementById('template').value;
+
+      // Validate form fields
+      if (!title || !url || !language || !templateId) {
+        document.getElementById('responseMessage').textContent = 'Please fill out all fields.';
+        document.getElementById('responseMessage').style.color = 'red';
+        return;
+      }
+
+      // Prepare data for POST request
+      const data = {
+        title,
+        url,
+        language,
+        templateId,
+        providerId
+      };
+
+      try {
+        // Send the data to your backend using POST
+        const response = await fetch(`${apiBaseURL}/api/createActivity`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        // Handle the response
+        if (response.ok) {
+          document.getElementById('responseMessage').textContent = 'Activity created successfully!';
+          document.getElementById('responseMessage').style.color = 'green';
+
+          // Redirect back to provider content page with provider ID
+          window.location.href = `provider_content.html?id=${providerId}`;
+        } else {
+          document.getElementById('responseMessage').textContent = 'Error: ' + result.message;
+          document.getElementById('responseMessage').style.color = 'red';
+        }
+      } catch (error) {
+        document.getElementById('responseMessage').textContent = 'An error occurred: ' + error.message;
+        document.getElementById('responseMessage').style.color = 'red';
       }
     });
   </script>
