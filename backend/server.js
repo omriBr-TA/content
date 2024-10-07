@@ -165,6 +165,73 @@ const server = createServer(async (req, res) => {
         res.end(JSON.stringify({ message: 'Internal Server Error' }));
       }
     }
+    else if (req.url.startsWith('/api/deleteProvider')) {
+      const query = parse(req.url.split('?')[1]); // Parse query string
+    
+      try {
+        const id = query.id; // Get provider ID from query string
+    
+        if (!id) {
+          // If ID is not provided, return a 400 error
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: "Provider ID is required" }));
+          return;
+        }
+    
+        // First, delete all activities associated with the provider
+        await pool.query('DELETE FROM content WHERE ContentProviderID = ?', [id]);
+    
+        // Then, delete the provider itself
+        const [result] = await pool.query('DELETE FROM providers WHERE id = ?', [id]);
+    
+        if (result.affectedRows > 0) {
+          // If the provider was deleted successfully
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Provider deleted successfully' }));
+        } else {
+          // If no provider was found with the given ID
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Provider not found' }));
+        }
+      } catch (err) {
+        console.error(err);
+        // Handle server errors
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Internal Server Error' }));
+      }
+    }
+    else if (req.url.startsWith('/api/deleteActivity')) {
+      const query = parse(req.url.split('?')[1]); // Parse query string
+    
+      try {
+        const id = query.id; // Get activity ID from query string
+    
+        if (!id) {
+          // If ID is not provided, return a 400 error
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: "Activity ID is required" }));
+          return;
+        }
+    
+        // Delete the activity from the content table
+        const [result] = await pool.query('DELETE FROM content WHERE id = ?', [id]);
+    
+        if (result.affectedRows > 0) {
+          // If the activity was deleted successfully
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Activity deleted successfully' }));
+        } else {
+          // If no activity was found with the given ID
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Activity not found' }));
+        }
+      } catch (err) {
+        console.error(err);
+        // Handle server errors
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Internal Server Error' }));
+      }
+    }
      else if (req.url === '/favicon.ico') {
       // You can handle the favicon request here, or just ignore it
       res.statusCode = 404;

@@ -64,10 +64,17 @@
       margin-bottom: 10px;
       cursor: pointer;
       background-color: #f9f9f9;
+      position: relative;
     }
 
     .provider-item:hover, .activity-item:hover {
       background-color: #f1f1f1;
+    }
+
+    .edit-delete-buttons {
+      position: absolute;
+      right: 10px;
+      top: 10px;
     }
 
     iframe {
@@ -115,6 +122,10 @@
               <strong>${provider.name}</strong><br>
               Contact: ${provider.contactInfo}<br>
               Website: <a href="${provider.websiteURL}" target="_blank">${provider.websiteURL}</a>
+              <div class="edit-delete-buttons">
+                <button onclick="editProvider(${provider.id})">Edit</button>
+                <button onclick="deleteProvider(${provider.id})">Delete</button>
+              </div>
             `;
             listItem.addEventListener('click', () => loadProviderActivities(provider.id));
             providerList.appendChild(listItem);
@@ -142,7 +153,13 @@
             data.forEach(activity => {
               const listItem = document.createElement('li');
               listItem.className = 'activity-item';
-              listItem.innerHTML = `<strong>${activity.title}</strong> (${activity.language})`;
+              listItem.innerHTML = `
+                <strong>${activity.title}</strong> (${activity.language})
+                <div class="edit-delete-buttons">
+                  <button onclick="editActivity(${activity.id}, ${providerId})">Edit</button>
+                  <button onclick="deleteActivity(${activity.id}, ${providerId})">Delete</button>
+                </div>
+              `;
               listItem.addEventListener('click', () => loadActivityContent(activity));
               activitiesList.appendChild(listItem);
             });
@@ -164,6 +181,34 @@
         const iframe = document.createElement('iframe');
         iframe.src = activity.url;
         contentDisplay.appendChild(iframe);
+      }
+    }
+
+    // Edit provider
+    function editProvider(providerId) {
+      window.location.href = `edit_provider.html?id=${providerId}`;
+    }
+
+    // Delete provider
+    function deleteProvider(providerId) {
+      if (confirm('Are you sure you want to delete this provider?')) {
+        fetch(`${apiBaseURL}/api/deleteProvider?id=${providerId}`, { method: 'DELETE' })
+          .then(() => loadProviders())
+          .catch(error => console.error('Error deleting provider:', error));
+      }
+    }
+
+    // Edit activity
+    function editActivity(activityId, providerId) {
+      window.location.href = `edit_activity.html?activityId=${activityId}&providerId=${providerId}`;
+    }
+
+    // Delete activity
+    function deleteActivity(activityId, providerId) {
+      if (confirm('Are you sure you want to delete this activity?')) {
+        fetch(`${apiBaseURL}/api/deleteActivity?id=${activityId}`, { method: 'DELETE' })
+          .then(() => loadProviderActivities(providerId))
+          .catch(error => console.error('Error deleting activity:', error));
       }
     }
 
