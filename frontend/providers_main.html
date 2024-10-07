@@ -156,8 +156,8 @@
               listItem.innerHTML = `
                 <strong>${activity.title}</strong> (${activity.language})
                 <div class="edit-delete-buttons">
-                  <button onclick="editActivity(${activity.id}, ${providerId})">Edit</button>
-                  <button onclick="deleteActivity(${activity.id}, ${providerId})">Delete</button>
+                  <button onclick="editActivity(${activity.ID}, ${providerId})">Edit</button>
+                  <button onclick="deleteActivity(${activity.ID}, ${providerId})">Delete</button>
                 </div>
               `;
               listItem.addEventListener('click', () => loadActivityContent(activity));

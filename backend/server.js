@@ -151,7 +151,7 @@ const server = createServer(async (req, res) => {
         }
     
         const [rows] = await pool.query(
-          'SELECT title, url, language,templateID FROM content WHERE ContentProviderID = ?', 
+          'SELECT ID,title, url, language,templateID FROM content WHERE ContentProviderID = ?', 
           [id]
         );
     
