@@ -182,7 +182,7 @@ const server = createServer(async (req, res) => {
         await pool.query('DELETE FROM content WHERE ContentProviderID = ?', [id]);
     
         // Then, delete the provider itself
-        const [result] = await pool.query('DELETE FROM providers WHERE id = ?', [id]);
+        const [result] = await pool.query('DELETE FROM content_provider WHERE id = ?', [id]);
     
         if (result.affectedRows > 0) {
           // If the provider was deleted successfully
