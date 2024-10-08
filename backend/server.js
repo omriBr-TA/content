@@ -309,9 +309,9 @@ const server = createServer(async (req, res) => {
       req.on('end', async () => {
         try {
           const activityData = JSON.parse(body); // Parse the body to get the activity data
-          const { id, title, url, language, templateID } = activityData; // Destructure the activity fields
+          const { id, title, url, language, templateID, ageMin,ageMax } = activityData; // Destructure the activity fields
     
-          if (!id || !title || !url || !language || !templateID) {
+          if (!id || !title || !url || !language || !templateID|| !ageMin|| !ageMax) {
             // If required fields are missing, return a 400 error
             res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: "All activity fields are required" }));
@@ -320,8 +320,8 @@ const server = createServer(async (req, res) => {
     
           // Update the activity in the database
           const [result] = await pool.query(
-            'UPDATE content SET title = ?, url = ?, language = ?, templateID = ? WHERE id = ?',
-            [title, url, language, templateID, id]
+            'UPDATE content SET title = ?, url = ?, language = ?, templateID = ?, age_min = ?, age_max = ?, WHERE id = ?',
+            [title, url, language, templateID,ageMin,ageMax, id]
           );
     
           if (result.affectedRows > 0) {
