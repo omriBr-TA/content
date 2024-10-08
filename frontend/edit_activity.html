@@ -37,6 +37,12 @@
     <label for="url">Activity URL:</label>
     <input type="url" id="url" name="url" required>
 
+    <label for="age min">Minimum Age</label>
+    <input type="number" id="age_min" name="age_min" min="0" required>
+
+    <label for="age max">Maximum Age</label>
+    <input type="number" id="age_max" name="age_max" min="0" required>
+
     <button type="submit">Save Changes</button>
   </form>
 
@@ -53,6 +59,8 @@
         document.getElementById('title').value = activity.title;
         document.getElementById('language').value = activity.language;
         document.getElementById('url').value = activity.url;
+        document.getElementById('age_min').value = activity.age_min;
+        document.getElementById('age_max').value = activity.age_max;
       })
       .catch(error => console.error('Error fetching activity:', error));
 
@@ -63,6 +71,8 @@
         id: activityId,
         title: document.getElementById('title').value,
         language: document.getElementById('language').value,
+        age_min: document.getElementById('age_min').value,
+        age_max: document.getElementById('age_max').value,
         url: document.getElementById('url').value,
         providerId: providerId
       };

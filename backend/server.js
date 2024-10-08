@@ -345,7 +345,7 @@ const server = createServer(async (req, res) => {
       const query = parse(req.url.split('?')[1]); // Parse query string
     
       try {
-        const id = query.id; // Get activity ID from query string
+        const id = query.activityId; // Get activity ID from query string
     
         if (!id) {
           // If ID is not provided, return a 400 error
@@ -355,7 +355,7 @@ const server = createServer(async (req, res) => {
         }
     
         const [rows] = await pool.query(
-          'SELECT ID, title, url, language, templateID FROM content WHERE id = ?',
+          'SELECT ID, title, url, language, templateID,age_min,age_max FROM content WHERE id = ?',
           [id]
         );
     
