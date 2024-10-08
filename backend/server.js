@@ -320,7 +320,7 @@ const server = createServer(async (req, res) => {
     
           // Update the activity in the database
           const [result] = await pool.query(
-            'UPDATE content SET title = ?, url = ?, language = ?, templateID = ?, age_min = ?, age_max = ?, WHERE id = ?',
+            'UPDATE content SET title = ?, url = ?, language = ?, templateID = ?, age_min = ?, age_max = ? WHERE id = ?',
             [title, url, language, templateID,age_min,age_max, id]
           );
     
