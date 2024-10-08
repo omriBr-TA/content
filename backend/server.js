@@ -114,12 +114,12 @@ const server = createServer(async (req, res) => {
         body += chunk.toString();
       });
       req.on('end', async () => {
-        const { title, url, language,providerId, templateId } = JSON.parse(body);
+        const { title, url, language,providerId, templateId,ageMin,ageMax } = JSON.parse(body);
 
         try {
           // Insert into the database
-          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`,`ContentProviderID`, `templateID`) VALUES (?, ?, ?,?,?)";
-          const [result] = await pool.query(query, [title, url, language, providerId,templateId]);
+          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`,`ContentProviderID`, `templateID`,`age_min`,`age_max`) VALUES (?, ?, ?,?,?,?,?)";
+          const [result] = await pool.query(query, [title, url, language, providerId,templateId,ageMin,ageMax]);
 
           // Get the inserted provider ID
           //const newProviderId = result.insertId;
@@ -151,7 +151,7 @@ const server = createServer(async (req, res) => {
         }
     
         const [rows] = await pool.query(
-          'SELECT ID,title, url, language,templateID FROM content WHERE ContentProviderID = ?', 
+          'SELECT ID,title, url, language,templateID,age_min,age_max FROM content WHERE ContentProviderID = ?', 
           [id]
         );
     
@@ -277,7 +277,7 @@ const server = createServer(async (req, res) => {
     
           // Update the provider in the database
           const [result] = await pool.query(
-            'UPDATE providers SET name = ?, contactInfo = ?, websiteURL = ? WHERE id = ?',
+            'UPDATE content_provider SET name = ?, contactInfo = ?, websiteURL = ? WHERE id = ?',
             [name, contactInfo, websiteURL, id]
           );
     

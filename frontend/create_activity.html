@@ -67,6 +67,12 @@
       <!-- Options will be populated dynamically -->
     </select>
 
+    <label for="age min">Minimum Age</label>
+    <input type="number" id="age_min" name="age_min" min="0" required>
+
+    <label for="age max">Maximum Age</label>
+    <input type="number" id="age_max" name="age_max" min="0" required>
+
     <button type="submit">Create Activity</button>
 
     <p id="responseMessage"></p>
@@ -113,6 +119,9 @@
       const url = document.getElementById('url').value;
       const language = document.getElementById('language').value;
       const templateId = document.getElementById('template').value;
+      const ageMin = document.getElementById('age_min').value;
+      const ageMax = document.getElementById('age_max').value;
+
 
       // Basic validation
       if (!title || !url || !language || !templateId) {
@@ -120,6 +129,11 @@
         document.getElementById('responseMessage').style.color = 'red';
         return;
       }
+      if (parseInt(ageMax) < parseInt(ageMin)) {
+        event.preventDefault(); // Prevent form submission
+        document.getElementById('responseMessage').textContent = 'Maximum age cannot be less than minimum age.';
+        document.getElementById('responseMessage').style.color = 'red';
+    }
 
       const providerId = getQueryParam('id');
 
@@ -134,7 +148,9 @@
         url,
         language,
         templateId,
-        providerId
+        providerId,
+        ageMin,
+        ageMax
       };
 
       const apiBaseURL = window.location.origin;

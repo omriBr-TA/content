@@ -154,12 +154,13 @@
               const listItem = document.createElement('li');
               listItem.className = 'activity-item';
               listItem.innerHTML = `
-                <strong>${activity.title}</strong> (${activity.language})
-                <div class="edit-delete-buttons">
-                  <button onclick="editActivity(${activity.ID}, ${providerId})">Edit</button>
-                  <button onclick="deleteActivity(${activity.ID}, ${providerId})">Delete</button>
-                </div>
-              `;
+              <strong>${activity.title}</strong> (${activity.language})<br>
+              Age Range: ${activity.age_min} - ${activity.age_max}
+              <div class="edit-delete-buttons">
+                <button onclick="editActivity(${activity.ID}, ${providerId})">Edit</button>
+                <button onclick="deleteActivity(${activity.ID}, ${providerId})">Delete</button>
+              </div>
+            `;
               listItem.addEventListener('click', () => loadActivityContent(activity));
               activitiesList.appendChild(listItem);
             });
