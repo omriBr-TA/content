@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Activity</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    form {
+      max-width: 500px;
+    }
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Edit Activity</h1>
+  <form id="editActivityForm">
+    <label for="title">Activity Title:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="language">Language:</label>
+    <input type="text" id="language" name="language" required>
+
+    <label for="url">Activity URL:</label>
+    <input type="url" id="url" name="url" required>
+
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <script>
+    const apiBaseURL = window.location.origin;
+    const urlParams = new URLSearchParams(window.location.search);
+    const activityId = urlParams.get('activityId');
+    const providerId = urlParams.get('providerId');
+
+    // Fetch the activity details and populate the form
+    fetch(`${apiBaseURL}/api/getActivityById?activityId=${activityId}`)
+      .then(response => response.json())
+      .then(activity => {
+        document.getElementById('title').value = activity.title;
+        document.getElementById('language').value = activity.language;
+        document.getElementById('url').value = activity.url;
+      })
+      .catch(error => console.error('Error fetching activity:', error));
+
+    // Handle form submission for editing the activity
+    document.getElementById('editActivityForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const updatedActivity = {
+        id: activityId,
+        title: document.getElementById('title').value,
+        language: document.getElementById('language').value,
+        url: document.getElementById('url').value,
+        providerId: providerId
+      };
+
+      fetch(`${apiBaseURL}/api/updateActivity`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedActivity)
+      })
+      .then(response => {
+        if (response.ok) {
+          alert('Activity updated successfully!');
+          window.location.href = 'index.html'; // Redirect back to the main page
+        } else {
+          alert('Failed to update activity.');
+        }
+      })
+      .catch(error => console.error('Error updating activity:', error));
+    });
+  </script>
+</body>
+</html>

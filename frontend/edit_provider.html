@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Provider</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    form {
+      max-width: 500px;
+    }
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Edit Provider</h1>
+  <form id="editProviderForm">
+    <label for="name">Provider Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="contactInfo">Contact Info:</label>
+    <input type="text" id="contactInfo" name="contactInfo" required>
+
+    <label for="websiteURL">Website URL:</label>
+    <input type="url" id="websiteURL" name="websiteURL" required>
+
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <script>
+    const apiBaseURL = window.location.origin;
+    const urlParams = new URLSearchParams(window.location.search);
+    const providerId = urlParams.get('id');
+
+    // Fetch the provider details and populate the form
+    fetch(`${apiBaseURL}/api/getProviderById?id=${providerId}`)
+      .then(response => response.json())
+      .then(provider => {
+        document.getElementById('name').value = provider.name;
+        document.getElementById('contactInfo').value = provider.contactInfo;
+        document.getElementById('websiteURL').value = provider.websiteURL;
+      })
+      .catch(error => console.error('Error fetching provider:', error));
+
+    // Handle form submission for editing the provider
+    document.getElementById('editProviderForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const updatedProvider = {
+        id: providerId,
+        name: document.getElementById('name').value,
+        contactInfo: document.getElementById('contactInfo').value,
+        websiteURL: document.getElementById('websiteURL').value
+      };
+
+      fetch(`${apiBaseURL}/api/updateProvider`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedProvider)
+      })
+      .then(response => {
+        if (response.ok) {
+          alert('Provider updated successfully!');
+          window.location.href = 'index.html'; // Redirect back to the main page
+        } else {
+          alert('Failed to update provider.');
+        }
+      })
+      .catch(error => console.error('Error updating provider:', error));
+    });
+  </script>
+</body>
+</html>

@@ -255,6 +255,160 @@ const server = createServer(async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(rows));
     }
+    else if (req.url.startsWith('/api/updateProvider') && req.method === 'PUT') {
+      let body = '';
+    
+      // Gather the request body
+      req.on('data', chunk => {
+        body += chunk.toString(); // Convert chunk to string and append
+      });
+    
+      req.on('end', async () => {
+        try {
+          const providerData = JSON.parse(body); // Parse the body to get the provider data
+          const { id, name, contactInfo, websiteURL } = providerData; // Destructure the provider fields
+    
+          if (!id || !name || !contactInfo || !websiteURL) {
+            // If required fields are missing, return a 400 error
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: "All provider fields are required" }));
+            return;
+          }
+    
+          // Update the provider in the database
+          const [result] = await pool.query(
+            'UPDATE providers SET name = ?, contactInfo = ?, websiteURL = ? WHERE id = ?',
+            [name, contactInfo, websiteURL, id]
+          );
+    
+          if (result.affectedRows > 0) {
+            // If the provider was updated successfully
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Provider updated successfully' }));
+          } else {
+            // If no provider was found with the given ID
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Provider not found' }));
+          }
+        } catch (err) {
+          console.error(err);
+          // Handle server errors
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Internal Server Error' }));
+        }
+      });
+    } 
+    else if (req.url.startsWith('/api/updateActivity')) {
+      let body = '';
+    
+      // Gather the request body
+      req.on('data', chunk => {
+        body += chunk.toString(); // Convert chunk to string and append
+      });
+    
+      req.on('end', async () => {
+        try {
+          const activityData = JSON.parse(body); // Parse the body to get the activity data
+          const { id, title, url, language, templateID } = activityData; // Destructure the activity fields
+    
+          if (!id || !title || !url || !language || !templateID) {
+            // If required fields are missing, return a 400 error
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: "All activity fields are required" }));
+            return;
+          }
+    
+          // Update the activity in the database
+          const [result] = await pool.query(
+            'UPDATE content SET title = ?, url = ?, language = ?, templateID = ? WHERE id = ?',
+            [title, url, language, templateID, id]
+          );
+    
+          if (result.affectedRows > 0) {
+            // If the activity was updated successfully
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Activity updated successfully' }));
+          } else {
+            // If no activity was found with the given ID
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Activity not found' }));
+          }
+        } catch (err) {
+          console.error(err);
+          // Handle server errors
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Internal Server Error' }));
+        }
+      });
+    }
+    else if (req.url.startsWith('/api/getActivityById') ) {
+      const query = parse(req.url.split('?')[1]); // Parse query string
+    
+      try {
+        const id = query.id; // Get activity ID from query string
+    
+        if (!id) {
+          // If ID is not provided, return a 400 error
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: "Activity ID is required" }));
+          return;
+        }
+    
+        const [rows] = await pool.query(
+          'SELECT ID, title, url, language, templateID FROM content WHERE id = ?',
+          [id]
+        );
+    
+        if (rows.length > 0) {
+          // If activity is found, return it as JSON
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(rows[0]));
+        } else {
+          // If no activity was found with the given ID
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Activity not found' }));
+        }
+      } catch (err) {
+        console.error(err);
+        // Handle server errors
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Internal Server Error' }));
+      }
+    }
+    else if (req.url.startsWith('/api/getProviderById')) {
+      const query = parse(req.url.split('?')[1]); // Parse query string
+    
+      try {
+        const id = query.id; // Get provider ID from query string
+    
+        if (!id) {
+          // If ID is not provided, return a 400 error
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: "Provider ID is required" }));
+          return;
+        }
+    
+        const [rows] = await pool.query(
+          'SELECT ID, name, contactInfo, websiteURL FROM content_provider WHERE id = ?',
+          [id]
+        );
+    
+        if (rows.length > 0) {
+          // If provider is found, return it as JSON
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(rows[0]));
+        } else {
+          // If no provider was found with the given ID
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Provider not found' }));
+        }
+      } catch (err) {
+        console.error(err);
+        // Handle server errors
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Internal Server Error' }));
+      }
+    }
     else {
       const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
