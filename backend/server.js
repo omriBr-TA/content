@@ -424,6 +424,12 @@ const server = createServer(async (req, res) => {
         else if(pathname === "/create_activity.html"){
           filePath = join(frontendDir, "create_activity.html");
         }
+        else if(pathname === "/edit_activity.html"){
+          filePath = join(frontendDir, "edit_activity.html");
+        }
+        else if(pathname === "/edit_provider.html"){
+          filePath = join(frontendDir, "edit_provider.html");
+        }
 
       let [rows] = await pool.query("SELECT * FROM `content_provider`;");
       let links = rows.map((row) => `<a href="${row.WebsiteURL}" target="_blank">${row.Name}</a>`).join("");
