@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create New Activity</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" integrity="sha512-5U/4GFW2LLbe08NWuLT1/5uZJmwRLtGZ0M5Np1RYUNMDYNGMnzQFBSMtFgmnNGsI+KbZVBWgF+l/DaTr0/D4eQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -64,25 +65,67 @@
     <label for="template">Template</label>
     <select id="template" name="template" required>
       <option value="" disabled selected>Select a template</option>
-      <!-- Options will be populated dynamically -->
     </select>
 
-    <label for="age min">Minimum Age</label>
+    <label for="age_min">Minimum Age</label>
     <input type="number" id="age_min" name="age_min" min="0" required>
 
-    <label for="age max">Maximum Age</label>
+    <label for="age_max">Maximum Age</label>
     <input type="number" id="age_max" name="age_max" min="0" required>
+
+    <!-- Multiple Select for Categories -->
+    <label for="categories">Categories</label>
+    <select id="categories" name="categories[]" multiple>
+      <!-- Options will be populated dynamically -->
+    </select>
 
     <button type="submit">Create Activity</button>
 
     <p id="responseMessage"></p>
   </form>
 
+  <!-- Chosen JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js" integrity="sha512-yEYJTWghUs2nYYsjWT0FwHY5VaX+0qMClnTYDoHY5uopvDWNjGV/xu/Dl/sU+aINZbNlvBbTDbTmqZQ8iNoI+A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
   <script>
+    // Initialize Chosen for the category select element
+    document.addEventListener('DOMContentLoaded', function() {
+      $('#categories').chosen({
+        width: '100%',
+        placeholder_text_multiple: 'Select Categories'
+      });
+    });
+
     // Function to get the provider ID from the URL
     function getQueryParam(param) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(param);
+    }
+
+    // Fetch categories from the backend and populate the dropdown
+    async function loadCategories() {
+      const apiBaseURL = window.location.origin;
+      try {
+        const response = await fetch(`${apiBaseURL}/api/getCategories`);
+        const categories = await response.json();
+
+        if (response.ok) {
+          const categorySelect = document.getElementById('categories');
+          categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categorySelect.appendChild(option);
+          });
+
+          // Re-trigger Chosen to update the list of categories
+          $('#categories').trigger('chosen:updated');
+        } else {
+          console.error('Error fetching categories:', categories.message);
+        }
+      } catch (error) {
+        console.error('An error occurred while loading categories:', error);
+      }
     }
 
     // Fetch templates from the backend and populate the dropdown
@@ -108,8 +151,9 @@
       }
     }
 
-    // Call the function to load templates when the page loads
+    // Call the functions to load templates and categories when the page loads
     loadTemplates();
+    loadCategories();
 
     document.getElementById('activityForm').addEventListener('submit', async function(event) {
       event.preventDefault(); // Prevent the form from refreshing the page
@@ -121,22 +165,22 @@
       const templateId = document.getElementById('template').value;
       const ageMin = document.getElementById('age_min').value;
       const ageMax = document.getElementById('age_max').value;
-
+      const categories = $('#categories').val(); // Get selected categories as an array
 
       // Basic validation
-      if (!title || !url || !language || !templateId) {
+      if (!title || !url || !language || !templateId || categories.length === 0) {
         document.getElementById('responseMessage').textContent = 'Please fill out all fields.';
         document.getElementById('responseMessage').style.color = 'red';
         return;
       }
+
       if (parseInt(ageMax) < parseInt(ageMin)) {
-        event.preventDefault(); // Prevent form submission
         document.getElementById('responseMessage').textContent = 'Maximum age cannot be less than minimum age.';
         document.getElementById('responseMessage').style.color = 'red';
-    }
+        return;
+      }
 
       const providerId = getQueryParam('id');
-
       if (!providerId) {
         document.body.innerHTML = '<p>Invalid provider ID.</p>';
         return;
@@ -150,7 +194,8 @@
         templateId,
         providerId,
         ageMin,
-        ageMax
+        ageMax,
+        categories // Include categories in the request
       };
 
       const apiBaseURL = window.location.origin;

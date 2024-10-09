@@ -114,20 +114,28 @@ const server = createServer(async (req, res) => {
         body += chunk.toString();
       });
       req.on('end', async () => {
-        const { title, url, language,providerId, templateId,ageMin,ageMax } = JSON.parse(body);
-
+        const { title, url, language, providerId, templateId, ageMin, ageMax, categories } = JSON.parse(body);
+    
         try {
-          // Insert into the database
-          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`,`ContentProviderID`, `templateID`,`age_min`,`age_max`) VALUES (?, ?, ?,?,?,?,?)";
-          const [result] = await pool.query(query, [title, url, language, providerId,templateId,ageMin,ageMax]);
-
-          // Get the inserted provider ID
-          //const newProviderId = result.insertId;
-
-          // Respond with success and the newly created provider's ID
+          // Insert into the content table
+          const query = "INSERT INTO `content` (`Title`, `URL`, `Language`, `ContentProviderID`, `templateID`, `age_min`, `age_max`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+          const [result] = await pool.query(query, [title, url, language, providerId, templateId, ageMin, ageMax]);
+    
+          // Get the inserted content ID
+          const newContentId = result.insertId;
+    
+          // Insert the selected categories into the content_category table
+          if (categories && categories.length > 0) {
+            const categoryQuery = "INSERT INTO `content_category` (`content_id`, `category_id`) VALUES ?";
+            const categoryValues = categories.map(categoryId => [newContentId, categoryId]);
+    
+            await pool.query(categoryQuery, [categoryValues]);
+          }
+    
+          // Respond with success
           res.statusCode = 201;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ message: 'Activity created successfully!'}));
+          res.end(JSON.stringify({ message: 'Activity and categories created successfully!' }));
         } catch (error) {
           console.error('Database Error:', error);
           res.statusCode = 500;
