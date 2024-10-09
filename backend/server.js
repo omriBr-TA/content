@@ -126,9 +126,9 @@ const server = createServer(async (req, res) => {
     
           // Insert the selected categories into the content_category table
           if (categories && categories.length > 0) {
-            const categoryQuery = "INSERT INTO `content_category` (`content_id`, `category_id`) VALUES ?";
+            const categoryQuery = "INSERT INTO `content_category` (`Content_ID`, `Category_ID`) VALUES ?";
             const categoryValues = categories.map(categoryId => [newContentId, categoryId]);
-    
+     
             await pool.query(categoryQuery, [categoryValues]);
           }
     
@@ -414,6 +414,23 @@ const server = createServer(async (req, res) => {
         console.error(err);
         // Handle server errors
         res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Internal Server Error' }));
+      }
+    }
+    else if (req.url === '/api/getCategories') {
+      try {
+        // Query to fetch all categories
+        const query = "SELECT `ID`, `Name` FROM `category`";
+        const [categories] = await pool.query(query);
+    
+        // Respond with the list of categories
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(categories));
+      } catch (error) {
+        console.error('Database Error:', error);
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ message: 'Internal Server Error' }));
       }
     }
